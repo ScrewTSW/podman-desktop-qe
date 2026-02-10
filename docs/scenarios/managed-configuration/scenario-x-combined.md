@@ -72,20 +72,20 @@ Create the following files on the test machine before starting Podman Desktop. T
   2. Change appearance in UI to `dark` → verify `settings.json` updated to `"preferences.appearance": "dark"`.
   3. Use the preference Reset action → verify `preferences.appearance` is removed from `settings.json` and the UI shows `system` (effective value from defaults/app).
 
-6. Property: `telemetry.enabled` (user + default)
+6. Property: `feedback.dialog` (user + default)
 - Expectation: user `false` overrides managed default `true` initially.
 - Steps:
-  1. Verify `settings.json` contains `"telemetry.enabled": false` and `default-settings.json` contains `"telemetry.enabled": true`.
-  2. Confirm UI shows telemetry disabled.
-  3. Toggle telemetry on in UI → verify `settings.json` updated to `true` and the UI shows telemetry enabled.
-  4. Use the preference Reset action → verify the user-level override is removed (confirm `settings.json` no longer contains `"telemetry.enabled"`) and the effective value returns to the managed default `true` (confirm `default-settings.json` still contains `"telemetry.enabled": true`).
+  1. Verify `settings.json` contains `"feedback.dialog": false` and `default-settings.json` contains `"feedback.dialog": true`.
+  2. Confirm UI shows feedback dialog disabled.
+  3. Toggle feedback dialog on in UI → verify `settings.json` updated to `true` and the UI shows feedback dialog enabled.
+  4. Use the preference Reset action → verify the user-level override is removed (confirm `settings.json` no longer contains `"feedback.dialog"`) and the effective value returns to the managed default `true` (confirm `default-settings.json` still contains `"feedback.dialog": true`).
 
 7. Property: `tasks.Toast` (user + locked)
-- Expectation: Key is present in `settings.json` and also listed in `locked.json`; UI may show a Managed label and should not allow persistent changes.
+- Expectation: Key is present in `settings.json` and also listed in `locked.json`; UI will show a Managed label and should not allow changes.
 - Steps:
   1. Verify `settings.json` contains `"tasks.Toast": true` and `locked.json` lists `"tasks.Toast"`.
-  2. Attempt to toggle the value in UI → verify the UI rejects the change or if the control toggles, confirm `settings.json` still contains `"tasks.Toast": true` (no persistent change).
-  3. Use the preference Reset action → verify no effect and `settings.json` still contains `"tasks.Toast": true` (value remains enforced by `locked.json`).
+  2. Attempt to toggle the value in UI → UI does not allow for change/input, fields are disabled.
+  3. Use the preference Reset action → Reset button is not shown.
 
 8. Property: `terminal.integrated.lineHeight` (locked-only)
 - Expectation: This key is only present in `locked.json` (no user or default). The UI should show a `Managed` label and not allow a persistent override; behavior may be undefined depending on product implementation.
@@ -98,7 +98,7 @@ Create the following files on the test machine before starting Podman Desktop. T
 9. Property: `preferences.zoomLevel` (managed default only)
 - Expectation: UI shows zoom level `0.5` initially (from managed defaults).
 - Steps:
-  1. Verify `default-settings.json` contains `"preferences.zoomLevel": 0.5` and `settings.json` does not contain an entry for `"preferences.zoomLevel"`.
+  1. Verify `default-settings.json` contains `"preferences.zoomLevel": 0.5` and `settings.json` reflects this change.
   2. Change zoom in UI to `1.0` → verify `settings.json` now contains `"preferences.zoomLevel": 1.0` and the UI shows 1.0.
   3. Use the preference Reset action → verify the user entry is removed (confirm `settings.json` no longer contains `"preferences.zoomLevel"`) and the UI returns to `0.5` (effective value from `default-settings.json`).
 
