@@ -2,6 +2,11 @@
 
 A local registry with a self-signed certificate and basic authentication is useful for testing registry workflows in Podman Desktop — adding authenticated registries, pulling/pushing images, and certificate trust scenarios.
 
+## Requirements
+
+- **Podman** — used to run the registry container
+- **OpenSSL** — used to generate the self-signed TLS certificate (and htpasswd hash when overriding default credentials)
+
 ## Quick start
 
 The setup script lives in the main repository at [`tests/playwright/scripts/setup-insecure-registry.sh`](https://github.com/podman-desktop/podman-desktop/blob/main/tests/playwright/scripts/setup-insecure-registry.sh).
@@ -19,24 +24,22 @@ All artifacts (certs, htpasswd) are created under `/tmp/pd-test-registry` — no
 ## What the script does
 
 1. Generates a self-signed TLS certificate for `localhost` (with SAN `DNS:localhost,IP:127.0.0.1`)
-2. Creates an htpasswd file with a pre-hashed password (bcrypt)
+2. Creates an htpasswd file (pre-computed bcrypt hash for defaults, `openssl passwd -apr1` for custom credentials)
 3. Starts a `docker.io/library/registry:2` container on `localhost:5443` with TLS and basic auth enabled
 
 ## Credentials
 
-| Field    | Value                                       |
-|----------|---------------------------------------------|
-| Username | `podmanqe`                                  |
-| Password | Available in GitHub secrets and listed below |
-
-**Password:** `mywordismypassword`
+| Field    | Default              | Override env var                |
+|----------|----------------------|---------------------------------|
+| Username | `testuser`           | `INSECURE_REGISTRY_USERNAME`    |
+| Password | `testpassword123`    | `INSECURE_REGISTRY_PASSWORD`    |
 
 ## Configuration
 
-| Setting        | Default | Override          |
-|----------------|---------|-------------------|
-| Registry port  | `5443`  | `REGISTRY_PORT` env var |
-| Container name | `pd-test-registry` | —           |
+| Setting        | Default              | Override env var                |
+|----------------|----------------------|---------------------------------|
+| Registry port  | `5443`               | `INSECURE_REGISTRY_PORT`        |
+| Container name | `pd-test-registry`   | `INSECURE_REGISTRY_CONTAINER_NAME` |
 
 ## Behavior when registry already exists
 
@@ -47,10 +50,13 @@ All artifacts (certs, htpasswd) are created under `/tmp/pd-test-registry` — no
 
 ```bash
 # Should return 401 (no credentials)
-curl -sk https://localhost:5443/v2/
+curl --cacert /tmp/pd-test-registry/registry.crt https://localhost:5443/v2/
 
 # Should return 200 (valid credentials)
-curl -sk -u podmanqe:mywordismypassword https://localhost:5443/v2/
+curl --cacert /tmp/pd-test-registry/registry.crt -u testuser:testpassword123 https://localhost:5443/v2/
+
+# Alternative: skip TLS verification entirely with -k
+curl -sk -u testuser:testpassword123 https://localhost:5443/v2/
 
 # Verify TLS certificate subject and SANs
 echo | openssl s_client -connect localhost:5443 2>/dev/null \
